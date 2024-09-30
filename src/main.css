@@ -1,57 +1,95 @@
 body {
-    font-family: Arial, sans-serif;
+    background-image: url(/src/pop.webp);
+    background-size: 250px;
+    background-position: center;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f0f0f0;
+    background-color: #f8d5e0; 
+    position: relative; 
 }
 
 #calculator {
     background-color: white;
     border-radius: 10px;
-    box-shadow: 0 0 70px #245cb533;
+    position: relative;
+    box-shadow: 0 0 70px #e38aa3; 
     padding: 20px;
-    width: 350px;
+    width: 330px;
 }
 
 #display {
+    color: rgb(34, 33, 33);
     width: 90%;
-    height: 50px;
-    font-size: 2em;
+    height: 45px;
+    font-size: 20px;
     text-align: right;
     border: none;
     padding: 10px;
     margin-bottom: 10px;
     border-radius: 5px;
-    background-color: #eaeaea;
+    background-color: #ffe0f0; 
 }
 
 button {
     width: 65px;
     height: 65px;
-    font-size: 1.5em;
+    font-size: 20px;
     margin: 5px;
     border: none;
-    border-radius: 5px;
-    background-color: #007bff;
+    border-radius: 15px;
+    background-color: #ff6781; 
     color: white;
     cursor: pointer;
     transition: background-color 0.2s;
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: #ff4570;
 }
 
 button:active {
-    background-color: #004080;
+    background-color: #cc3658;
+}
+
+.unique {
+    width: 65px;
+    height: 65px;
+    font-size: 20px;
+    margin: 5px;
+    border: none;
+    border-radius: 15px;
+    background-color: #83dcf2; 
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.unique:hover {
+    background-color: #05c6f7;
 }
 
 .operator {
-    background-color: #ffc107;
+    background-color: #3dce64; 
+    color: white;
 }
 
 .operator:hover {
-    background-color: #e0a800;
+    background-color: #31b257;
+}
+
+.operator:active {
+    background-color: #269146;
+}
+
+#pony-image {
+    border-radius: 200px;
+    position: absolute;
+    top: 0px;
+    left: 0;
+    width: 15%;
+    height: auto;
+    z-index: 1;
 }
