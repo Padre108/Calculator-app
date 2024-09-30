@@ -9,7 +9,6 @@ const calculator = {
   multiply: (a: number, b: number): number => a * b,
   power: (a: number, b: number): number => Math.pow(a, b),
 
-  
   // Operations mapping
   operations: {
     "+": (a: number, b: number): number => calculator.add(a, b),
@@ -18,28 +17,26 @@ const calculator = {
     "/": (a: number, b: number): number | string => calculator.divide(a, b),
   } as const,
 
-  isResult: false,  // Flag to track if last operation was a result or not
-  
-  // Handle display logic for the calculator
-  handleOndisplay(expression: string): string | number {
+  isResult: false, // Flag to track if last operation was a result or not
+
+   // Handle display logic for the calculator
+   handleOndisplay(expression: string): string | number {
     const operators = Object.keys(this.operations) as Array<keyof typeof this.operations>;
     const stack: (number | string)[] = [];
     let num = '';
-    
 
     for (let i = 0; i < expression.length; i++) {
       const char = expression[i];
 
       // Handle negative numbers
       if (char === '-' && (i === 0 || operators.includes(expression[i - 1] as keyof typeof this.operations))) {
-        // It's the start of the expression or after an operator
         num += char; // Treat as part of the number
       } 
       // If character is a number or decimal
       else if (!isNaN(Number(char)) || char === '.') {
         if (this.isResult) {
           num = char; // Start a new number if last input was a result
-          this.isResult = false;  // Reset flag
+          this.isResult = false; // Reset flag
         } else {
           num += char; // Accumulate the number
         }
@@ -50,10 +47,10 @@ const calculator = {
           stack.push(Number(num)); // Push the accumulated number
           num = ''; // Reset num for next number
         }
-        while (stack.length > 1 && this.hasPrecedence(char, stack[stack.length - 2] as string)) {
+        while (stack.length > 1 && this.hasPrecedence(char as keyof typeof this.operations, stack[stack.length - 2] as keyof typeof this.operations)) {
           this.evaluateStack(stack);
         }
-        stack.push(char); // Push the operator onto the stack
+        stack.push(char as keyof typeof this.operations); // Push the operator onto the stack
       } else {
         return "math error"; // Handle invalid input
       }
@@ -67,11 +64,17 @@ const calculator = {
     while (stack.length > 1) {
       this.evaluateStack(stack);
     }
-
+    
     const result = stack[0];
+    // Limit the result to 3 decimal places
+    const limitedResult = typeof result === 'number' ? parseFloat(result.toFixed(3)) : result;
+
     this.isResult = true; // Set flag to indicate result was calculated
 
-    return result;
+ 
+    this.isResult = true; // Set flag to indicate result was calculated
+    return limitedResult; // Return the limited result
+    
   },
 
   // Evaluate the stack based on the top operators
@@ -83,12 +86,12 @@ const calculator = {
   },
 
   // Determine operator precedence
-  hasPrecedence(op1: string, op2: string): boolean {
+  hasPrecedence(op1: keyof typeof this.operations, op2: keyof typeof this.operations): boolean {
     const precedence: { [key: string]: number } = {
       '+': 1,
       '-': 1,
       'x': 2,
-      '/': 2
+      '/': 2,
     };
     return precedence[op1] <= precedence[op2]; // Return precedence
   },
@@ -96,13 +99,13 @@ const calculator = {
 // Function to get greeting messages
 const getHello = (index: number): { hello: string, nextIndex: number } => {
   const hellos = [
-    "Hello Love Good Bye", 
-    "Hola Amor Adiós", 
-    "Bonjour Amour Au Revoir", 
-    "Hallo Liebe Auf Wiedersehen", 
-    "Ciao Amore Addio", 
-    "Konnichiwa Ai Sayōnara", 
-    "Hi mahal Paalam", 
+    "Hello Love Good Bye",
+    "Hola Amor Adiós",
+    "Bonjour Amour Au Revoir",
+    "Hallo Liebe Auf Wiedersehen",
+    "Ciao Amore Addio",
+    "Konnichiwa Ai Sayōnara",
+    "Hi mahal Paalam",
     "Privet Lyubov' Do svidaniya"
   ];
   const hello = hellos[index];
@@ -115,7 +118,8 @@ function initCalculator() {
   let expression = "";
   let helloIndex = 0; // Greeting index
   let isOn = false;
-  const displayLimit = 15;  // Limit to 15 characters
+  const displayLimit = 15; // Limit to 15 characters
+  const operators = Object.keys(calculator.operations) as Array<keyof typeof calculator.operations>;
 
   // Set up button event listeners
   document.querySelectorAll("#calculator button").forEach(button => {
@@ -175,6 +179,7 @@ function initCalculator() {
         const result = calculator.handleOndisplay(expression);
         display.value = result.toString(); // Show result
         expression = result.toString(); // Update expression with result
+        calculator.isResult = true; // Set the result flag to true
         return;
       }
 
@@ -185,19 +190,20 @@ function initCalculator() {
 
       // Check if the last input was a result
       if (calculator.isResult) {
-        // If the input is an operator, continue with the result; otherwise, start a new expression
-        if (["+", "-", "x", "/"].includes(value)) {
+        // If the input is a number or a decimal, reset the expression to start a new one
+        if (!isNaN(Number(value)) || value === '.') {
+          expression = value; // Start a new expression with the new number
+        } else if (operators.includes(value as keyof typeof calculator.operations)) {
+          // If the input is an operator, continue with the result
           expression = display.value; // Use the current display value (result) for the next operation
           expression += value; // Append the operator
-          calculator.isResult = false; // Reset the result flag
-        } else {
-          // Reset expression and start new input
-          expression = value; 
         }
+        calculator.isResult = false; // Reset the result flag after handling the input
       } else {
         // Append value to expression
         expression += value;
       }
+
       display.value = expression; // Update display
     });
   });
