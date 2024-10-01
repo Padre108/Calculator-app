@@ -1,213 +1,223 @@
 const calculator = {
-  // Math operations
-  add: (a: number, b: number): number => a + b,
-  subtract: (a: number, b: number): number => a - b,
+  // Object that represents a calculator with various operations
+
+  // Math operations for the calculator
+  add: (a: number, b: number): number => a + b, // Addition operation
+  subtract: (a: number, b: number): number => a - b, // Subtraction operation
   divide: (a: number, b: number): number | string => {
-    if (b === 0) return "Error!";
-    return a / b;
+    if (b === 0) return "Error!"; // Handle division by zero with error
+    return a / b; // Division operation
   },
-  multiply: (a: number, b: number): number => a * b,
-  power: (a: number, b: number): number => Math.pow(a, b),
+  multiply: (a: number, b: number): number => a * b, // Multiplication operation
+  power: (a: number, b: number): number => Math.pow(a, b), // Power/exponentiation operation
 
-  // Operations mapping
+  // Mapping between operator symbols and their respective functions
   operations: {
-    "+": (a: number, b: number): number => calculator.add(a, b),
-    "-": (a: number, b: number): number => calculator.subtract(a, b),
-    "x": (a: number, b: number): number => calculator.multiply(a, b),
-    "/": (a: number, b: number): number | string => calculator.divide(a, b),
-  } as const,
+    "+": (a: number, b: number): number => calculator.add(a, b), // Map addition operator
+    "-": (a: number, b: number): number => calculator.subtract(a, b), // Map subtraction operator
+    "x": (a: number, b: number): number => calculator.multiply(a, b), // Map multiplication operator
+    "/": (a: number, b: number): number | string => calculator.divide(a, b), // Map division operator
+  } as const, // Ensure operations cannot be changed later
 
-  isResult: false, // Flag to track if last operation was a result or not
+  isResult: false, // Flag indicating whether the last operation produced a result
 
-   // Handle display logic for the calculator
-   handleOndisplay(expression: string): string | number {
-    const operators = Object.keys(this.operations) as Array<keyof typeof this.operations>;
-    const stack: (number | string)[] = [];
-    let num = '';
+  // Function to handle display logic for the calculator
+  handleOndisplay(expression: string): string | number {
+    const operators = Object.keys(this.operations) as Array<keyof typeof this.operations>; // Extract operator keys
+    const stack: (number | string)[] = []; // Stack to evaluate the expression
+    let num = ''; // Buffer to build numbers
 
     for (let i = 0; i < expression.length; i++) {
       const char = expression[i];
 
       // Handle negative numbers
       if (char === '-' && (i === 0 || operators.includes(expression[i - 1] as keyof typeof this.operations))) {
-        num += char; // Treat as part of the number
+        num += char; // Treat minus sign as part of a negative number
       } 
-      // If character is a number or decimal
+      // If character is a number or decimal point
       else if (!isNaN(Number(char)) || char === '.') {
         if (this.isResult) {
-          num = char; // Start a new number if last input was a result
-          this.isResult = false; // Reset flag
+          num = char; // Start a new number if the last input was a result
+          this.isResult = false; // Reset the result flag
         } else {
-          num += char; // Accumulate the number
+          num += char; // Accumulate characters to build the number
         }
       } 
       // If character is an operator
       else if (operators.includes(char as keyof typeof this.operations)) {
         if (num) {
-          stack.push(Number(num)); // Push the accumulated number
-          num = ''; // Reset num for next number
+          stack.push(Number(num)); // Push the current number onto the stack
+          num = ''; // Reset number buffer for the next number
         }
+        // Check for operator precedence and evaluate stack if needed
         while (stack.length > 1 && this.hasPrecedence(char as keyof typeof this.operations, stack[stack.length - 2] as keyof typeof this.operations)) {
-          this.evaluateStack(stack);
+          this.evaluateStack(stack); // Evaluate the stack based on operator precedence
         }
         stack.push(char as keyof typeof this.operations); // Push the operator onto the stack
       } else {
-        return "math error"; // Handle invalid input
+        return "math error"; // Return error for invalid input
       }
     }
 
     if (num) {
-      stack.push(Number(num)); // Push the last number
+      stack.push(Number(num)); // Push the last number onto the stack
     }
 
-    // Final evaluation of the stack
+    // Evaluate the stack until only one result remains
     while (stack.length > 1) {
       this.evaluateStack(stack);
     }
-    
-    const result = stack[0];
-    // Limit the result to 3 decimal places
+
+    const result = stack[0]; // Get the final result
+
+    // Limit the result to 3 decimal places if it's a number
     const limitedResult = typeof result === 'number' ? parseFloat(result.toFixed(3)) : result;
 
-    this.isResult = true; // Set flag to indicate result was calculated
+    this.isResult = true; // Set the result flag to true after calculation
 
- 
-    this.isResult = true; // Set flag to indicate result was calculated
-    return limitedResult; // Return the limited result
-    
+    return limitedResult; // Return the final result, limited to 3 decimal places
   },
 
-  // Evaluate the stack based on the top operators
+  // Evaluate the stack using the top operator and numbers
   evaluateStack(stack: (number | string)[]): void {
-    const b = stack.pop() as number;
-    const op = stack.pop() as keyof typeof this.operations;
-    const a = stack.pop() as number;
-    stack.push(this.operations[op](a, b)); // Evaluate and push the result
+    const b = stack.pop() as number; // Pop the second operand
+    const op = stack.pop() as keyof typeof this.operations; // Pop the operator
+    const a = stack.pop() as number; // Pop the first operand
+    stack.push(this.operations[op](a, b)); // Evaluate and push the result back onto the stack
   },
 
-  // Determine operator precedence
+  // Determine operator precedence (higher number means higher precedence)
   hasPrecedence(op1: keyof typeof this.operations, op2: keyof typeof this.operations): boolean {
     const precedence: { [key: string]: number } = {
-      '+': 1,
+      '+': 1, // Addition and subtraction have the lowest precedence
       '-': 1,
-      'x': 2,
+      'x': 2, // Multiplication and division have higher precedence
       '/': 2,
     };
-    return precedence[op1] <= precedence[op2]; // Return precedence
+    return precedence[op1] <= precedence[op2]; // Return true if op1 has less or equal precedence to op2
   },
 };
-// Function to get greeting messages
+
+// Function to get greeting messages based on an index
 const getHello = (index: number): { hello: string, nextIndex: number } => {
   const hellos = [
-    "Hello Love Good Bye",
-    "Hola Amor Adiós",
-    "Bonjour Amour Au Revoir",
-    "Hallo Liebe Auf Wiedersehen",
-    "Ciao Amore Addio",
-    "Konnichiwa Ai Sayōnara",
-    "Hi mahal Paalam",
-    "Privet Lyubov' Do svidaniya"
+    "Hello Love Good Bye", // English greeting
+    "Hola Amor Adiós", // Spanish greeting
+    "Bonjour Amour Au Revoir", // French greeting
+    "Hallo Liebe Auf Wiedersehen", // German greeting
+    "Ciao Amore Addio", // Italian greeting
+    "Konnichiwa Ai Sayōnara", // Japanese greeting
+    "Hi mahal Paalam", // Filipino greeting
+    "Privet Lyubov' Do svidaniya" // Russian greeting
   ];
-  const hello = hellos[index];
-  const nextIndex = (index + 1) % hellos.length; // Cycle through hellos
-  return { hello, nextIndex };
+  const hello = hellos[index]; // Get greeting message at the current index
+  const nextIndex = (index + 1) % hellos.length; // Determine the next index to cycle through greetings
+  return { hello, nextIndex }; // Return the greeting and the next index
 };
 
+// Initialize the calculator functionality
 function initCalculator() {
-  const display = document.getElementById("display") as HTMLInputElement;
-  let expression = "";
-  let helloIndex = 0; // Greeting index
-  let isOn = false;
-  const displayLimit = 15; // Limit to 15 characters
-  const operators = Object.keys(calculator.operations) as Array<keyof typeof calculator.operations>;
+  const display = document.getElementById("display") as HTMLInputElement; // Get the display element
+  let expression = ""; // Store the current expression being entered
+  let helloIndex = 0; // Track the current index for greeting messages
+  let isOn = false; // Track if the calculator is on or off
+  const displayLimit = 15; // Limit the number of characters on the display
+  const operators = Object.keys(calculator.operations) as Array<keyof typeof calculator.operations>; // Extract operator keys
 
-  // Set up button event listeners
+  // Add event listeners to buttons in the calculator
   document.querySelectorAll("#calculator button").forEach(button => {
     button.addEventListener("click", (e: Event) => {
-      const target = e.target as HTMLButtonElement;
-      const value = target.textContent;
+      const target = e.target as HTMLButtonElement; // Get the clicked button element
+      const value = target.textContent; // Get the text content of the clicked button
 
-      if (!value) return;
+      if (!value) return; // Ignore if button has no value
 
-      // Clear display (AC button)
+      // Handle "AC" button (Clear all)
       if (value === "AC") {
-        isOn = true; // Turn on the calculator
-        expression = "0";
-        display.value = expression;
+        isOn = true; // Turn the calculator on
+        expression = "0"; // Reset expression
+        display.value = expression; // Update the display
         return;
       }
 
-      // Turn on the calculator
+      // Handle "on" button (Turn calculator on)
       if (value === "on") {
-        isOn = true; // Change state to on
-        expression = "0";
-        display.value = expression;
+        isOn = true; // Turn the calculator on
+        expression = "0"; // Reset expression
+        display.value = expression; // Update the display
         return;
       }
 
-      // Turn off the calculator
+      // Handle "bye!" button (Turn calculator off)
       if (value === "bye!") {
-        isOn = false; // Change state to off
-        expression = "";
-        display.value = expression;
+        // Only show "bye!" message if the calculator is currently on
+        if (isOn) {
+          isOn = false; // Turn the calculator off
+          expression = "bye!"; // Show "bye!" message
+          display.value = expression; // Update the display
+
+          // Clear the display after 1 second
+          setTimeout(function() {
+              display.value = ""; // Clear the display
+          }, 1000); // 1000 milliseconds = 1 second
+        }
         return;
       }
 
-      // Ensure calculator is on
+      // If calculator is off, ignore other button presses
       if (!isOn) {
-        return; // Do nothing if the calculator is off
+        return;
       }
 
-      // Backspace functionality (⌫ button)
+      // Handle backspace (⌫ button)
       if (value === "⌫") {
-        expression = expression.slice(0, -1); // Remove last character
-        display.value = expression || "0"; // Show 0 if expression is empty
+        expression = expression.slice(0, -1); // Remove the last character from the expression
+        display.value = expression || "0"; // If expression is empty, display 0
         return;
       }
 
-      // Greeting functionality (hello! button)
+      // Handle greeting functionality (hello! button)
       if (value === "hello!") {
-        const { hello, nextIndex } = getHello(helloIndex);
-        expression = ""; // Clear expression for greeting
-        helloIndex = nextIndex;
-        display.value = hello; // Show greeting message
+        const { hello, nextIndex } = getHello(helloIndex); // Get the current greeting
+        expression = ""; // Clear the expression for the greeting
+        helloIndex = nextIndex; // Update the greeting index for the next greeting
+        display.value = hello; // Show the greeting message on the display
         return;
       }
 
-      // Equals functionality (= button)
+      // Handle equals (= button)
       if (value === "=") {
-        const result = calculator.handleOndisplay(expression);
-        display.value = result.toString(); // Show result
-        expression = result.toString(); // Update expression with result
+        const result = calculator.handleOndisplay(expression); // Calculate the result based on the current expression
+        display.value = result.toString(); // Show the result on the display
+        expression = result.toString(); // Update the expression with the result
         calculator.isResult = true; // Set the result flag to true
         return;
       }
 
-      // Character limit check and can't add more digits if it has reached 15 characters
+      // Check if the character limit for the display is reached
       if (expression.length >= displayLimit) {
-        return; // Do nothing if limit reached
+        return; // Do nothing if limit is reached
       }
 
-      // Check if the last input was a result
+      // Handle if the last input was a result
       if (calculator.isResult) {
-        // If the input is a number or a decimal, reset the expression to start a new one
+        // If the new input is a number or decimal point, start a new expression
         if (!isNaN(Number(value)) || value === '.') {
-          expression = value; // Start a new expression with the new number
+          expression = value; // Start a new expression
         } else if (operators.includes(value as keyof typeof calculator.operations)) {
-          // If the input is an operator, continue with the result
-          expression = display.value; // Use the current display value (result) for the next operation
-          expression += value; // Append the operator
+          // If the new input is an operator, continue using the result for further operations
+          expression = display.value; // Use the current result as the base
+          expression += value; // Append the operator to the expression
         }
-        calculator.isResult = false; // Reset the result flag after handling the input
+        calculator.isResult = false; // Reset the result flag
       } else {
-        // Append value to expression
-        expression += value;
+        expression += value; // Append the new value to the expression
       }
 
-      display.value = expression; // Update display
+      display.value = expression; // Update the display with the current expression
     });
   });
 }
 
-// Initialize the calculator when the DOM content is loaded
-document.addEventListener("DOMContentLoaded", initCalculator);
+// Initialize the calculator once the DOM content has fully loaded
+document.addEventListener("DOMContentLoaded", initCalculator); // Set up the calculator
