@@ -1,100 +1,88 @@
 const calculator = {
-  // Object that represents a calculator with various operations
-
   // Math operations for the calculator
-  add: (a: number, b: number): number => a + b, // Addition operation
-  subtract: (a: number, b: number): number => a - b, // Subtraction operation
+  add: (a: number, b: number): number => a + b,
+  subtract: (a: number, b: number): number => a - b,
   divide: (a: number, b: number): number | string => {
-    if (b === 0) return "Error!"; // Handle division by zero with error
-    return a / b; // Division operation
+    if (b === 0) return "Error!";
+    return a / b;
   },
-  multiply: (a: number, b: number): number => a * b, // Multiplication operation
-  power: (a: number, b: number): number => Math.pow(a, b), // Power/exponentiation operation
+  multiply: (a: number, b: number): number => a * b,
+  power: (a: number, b: number): number => Math.pow(a, b),
 
-  // Mapping between operator symbols and their respective functions
   operations: {
-    "+": (a: number, b: number): number => calculator.add(a, b), // Map addition operator
-    "-": (a: number, b: number): number => calculator.subtract(a, b), // Map subtraction operator
-    "x": (a: number, b: number): number => calculator.multiply(a, b), // Map multiplication operator
-    "/": (a: number, b: number): number | string => calculator.divide(a, b), // Map division operator
-  } as const, // Ensure operations cannot be changed later
+    "+": (a: number, b: number): number => calculator.add(a, b),
+    "-": (a: number, b: number): number => calculator.subtract(a, b),
+    "x": (a: number, b: number): number => calculator.multiply(a, b),
+    "/": (a: number, b: number): number | string => calculator.divide(a, b),
+  } as const,
 
-  isResult: false, // Flag indicating whether the last operation produced a result
+  isResult: false, // Flag to track if last input was a result
 
   // Function to handle display logic for the calculator
   handleOndisplay(expression: string): string | number {
-    const operators = Object.keys(this.operations) as Array<keyof typeof this.operations>; // Extract operator keys
-    const stack: (number | string)[] = []; // Stack to evaluate the expression
-    let num = ''; // Buffer to build numbers
+    const operators = Object.keys(this.operations) as Array<keyof typeof this.operations>;
+    const stack: (number | string)[] = [];
+    let num = '';
 
     for (let i = 0; i < expression.length; i++) {
       const char = expression[i];
 
       // Handle negative numbers
       if (char === '-' && (i === 0 || operators.includes(expression[i - 1] as keyof typeof this.operations))) {
-        num += char; // Treat minus sign as part of a negative number
-      } 
-      // If character is a number or decimal point
-      else if (!isNaN(Number(char)) || char === '.') {
+        num += char;
+      } else if (!isNaN(Number(char)) || char === '.') {
         if (this.isResult) {
-          num = char; // Start a new number if the last input was a result
-          this.isResult = false; // Reset the result flag
+          num = char;
+          this.isResult = false;
         } else {
-          num += char; // Accumulate characters to build the number
+          num += char;
         }
-      } 
-      // If character is an operator
-      else if (operators.includes(char as keyof typeof this.operations)) {
+      } else if (operators.includes(char as keyof typeof this.operations)) {
         if (num) {
-          stack.push(Number(num)); // Push the current number onto the stack
-          num = ''; // Reset number buffer for the next number
+          stack.push(Number(num));
+          num = '';
         }
-        // Check for operator precedence and evaluate stack if needed
         while (stack.length > 1 && this.hasPrecedence(char as keyof typeof this.operations, stack[stack.length - 2] as keyof typeof this.operations)) {
-          this.evaluateStack(stack); // Evaluate the stack based on operator precedence
+          this.evaluateStack(stack);
         }
-        stack.push(char as keyof typeof this.operations); // Push the operator onto the stack
+        stack.push(char as keyof typeof this.operations);
       } else {
         return "math error"; // Return error for invalid input
       }
     }
 
     if (num) {
-      stack.push(Number(num)); // Push the last number onto the stack
+      stack.push(Number(num));
     }
 
-    // Evaluate the stack until only one result remains
     while (stack.length > 1) {
       this.evaluateStack(stack);
     }
 
-    const result = stack[0]; // Get the final result
-
-    // Limit the result to 3 decimal places if it's a number
+    const result = stack[0];
     const limitedResult = typeof result === 'number' ? parseFloat(result.toFixed(3)) : result;
 
-    this.isResult = true; // Set the result flag to true after calculation
-
-    return limitedResult; // Return the final result, limited to 3 decimal places
+    this.isResult = true;
+    return limitedResult;
   },
 
-  // Evaluate the stack using the top operator and numbers
+  // Evaluate the stack based on operators and operands
   evaluateStack(stack: (number | string)[]): void {
-    const b = stack.pop() as number; // Pop the second operand
-    const op = stack.pop() as keyof typeof this.operations; // Pop the operator
-    const a = stack.pop() as number; // Pop the first operand
-    stack.push(this.operations[op](a, b)); // Evaluate and push the result back onto the stack
+    const b = stack.pop() as number;
+    const op = stack.pop() as keyof typeof this.operations;
+    const a = stack.pop() as number;
+    stack.push(this.operations[op](a, b));
   },
 
-  // Determine operator precedence (higher number means higher precedence)
+  // Determine operator precedence
   hasPrecedence(op1: keyof typeof this.operations, op2: keyof typeof this.operations): boolean {
     const precedence: { [key: string]: number } = {
-      '+': 1, // Addition and subtraction have the lowest precedence
+      '+': 1,
       '-': 1,
-      'x': 2, // Multiplication and division have higher precedence
+      'x': 2,
       '/': 2,
     };
-    return precedence[op1] <= precedence[op2]; // Return true if op1 has less or equal precedence to op2
+    return precedence[op1] <= precedence[op2];
   },
 };
 
@@ -150,16 +138,15 @@ function initCalculator() {
 
       // Handle "bye!" button (Turn calculator off)
       if (value === "bye!") {
-        // Only show "bye!" message if the calculator is currently on
         if (isOn) {
           isOn = false; // Turn the calculator off
           expression = "bye!"; // Show "bye!" message
           display.value = expression; // Update the display
 
           // Clear the display after 1 second
-          setTimeout(function() {
+          setTimeout(() => {
               display.value = ""; // Clear the display
-          }, 1000); // 1000 milliseconds = 1 second
+          }, 1000);
         }
         return;
       }
@@ -196,20 +183,30 @@ function initCalculator() {
 
       // Check if the character limit for the display is reached
       if (expression.length >= displayLimit) {
-        return; // Do nothing if limit is reached
+        return;
+      }
+
+      // Prevent appending invalid sequences like "..", "++", "xx", "//"
+      const lastChar = expression.slice(-1); // Get the last character in the expression
+      const secondLast = expression.slice(-2, -1); // Get the second last character in the expression
+
+      const invalidConsecutiveOperators = /[x\/\+]/.test(lastChar) && /[x\/\+]/.test(value); // Prevent invalid consecutive operators
+      const invalidMinusOperator = lastChar === '-' && secondLast === '-' && value === '-'; // Prevent triple minus "---"
+      const invalidConsecutiveDots = lastChar === '.' && value === '.'; // Prevent consecutive dots
+
+      if (invalidConsecutiveOperators || invalidConsecutiveDots || invalidMinusOperator) {
+        return; // Skip appending the value if it creates an invalid sequence
       }
 
       // Handle if the last input was a result
       if (calculator.isResult) {
-        // If the new input is a number or decimal point, start a new expression
         if (!isNaN(Number(value)) || value === '.') {
           expression = value; // Start a new expression
         } else if (operators.includes(value as keyof typeof calculator.operations)) {
-          // If the new input is an operator, continue using the result for further operations
           expression = display.value; // Use the current result as the base
           expression += value; // Append the operator to the expression
         }
-        calculator.isResult = false; // Reset the result flag
+        calculator.isResult = false;
       } else {
         expression += value; // Append the new value to the expression
       }
@@ -220,4 +217,4 @@ function initCalculator() {
 }
 
 // Initialize the calculator once the DOM content has fully loaded
-document.addEventListener("DOMContentLoaded", initCalculator); // Set up the calculator
+document.addEventListener("DOMContentLoaded", initCalculator);

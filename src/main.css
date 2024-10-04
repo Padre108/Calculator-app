@@ -1,70 +1,64 @@
 body {
-    background-image: url(/src/pop.webp);
-    background-size: cover;
+     background-image: url(/src/pop.webp);
+    background-size: 2px;
     background-position: center;
-    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Comic Sans MS', 'Arial', sans-serif; 
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
     background-color: #f8d5e0; 
-    position: relative; 
+    position: relative;
 }
 
 #calculator {
     background-color: white;
-    border-radius: 10px;
+    border-radius: 15px;
     position: absolute;
-    box-shadow: 0 0 70px #e38aa3; 
+    box-shadow: 0 0 170px #e38aa3;
     padding: 20px;
     width: 330px;
 }
 
 #display {
-    color: rgb(34, 33, 33);
+    color: #222;
     width: 90%;
     height: 45px;
-    font-size: 20px;
+    font-size: 22px;
     text-align: right;
     border: none;
     padding: 10px;
     margin-bottom: 10px;
-    border-radius: 5px;
+    border-radius: 10px;
     background-color: #ffe0f0; 
+    font-family: 'Comic Sans MS', sans-serif; 
 }
 
 button {
     width: 65px;
     height: 65px;
-    font-size: 20px;
+    font-size: 22px; 
     margin: 5px;
     border: none;
     border-radius: 15px;
-    background-color: #ff6781; 
+    background-color: #ff77a9; 
     color: white;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, transform 0.1s;
+    font-family: 'Comic Sans MS', sans-serif; 
 }
 
 button:hover {
-    background-color: #ff4570;
+    background-color: #ff4570; 
 }
 
 button:active {
     background-color: #cc3658;
+    transform: scale(0.95); 
 }
 
 .unique {
-    width: 65px;
-    height: 65px;
-    font-size: 20px;
-    margin: 5px;
-    border: none;
-    border-radius: 15px;
     background-color: #83dcf2; 
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.2s;
 }
 
 .unique:hover {
@@ -72,7 +66,7 @@ button:active {
 }
 
 .operator {
-    background-color: #3dce64; 
+    background-color: #3dce64;
     color: white;
 }
 
@@ -82,6 +76,7 @@ button:active {
 
 .operator:active {
     background-color: #269146;
+    transform: scale(0.95); 
 }
 
 #pony-image {
